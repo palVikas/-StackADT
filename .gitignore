@@ -1,0 +1,6 @@
+*.exe
+*.o
+*.exe.*
+*TestRunner.c
+ctest-0.0.4.tgz
+sampleTest.c
