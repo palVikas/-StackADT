@@ -153,6 +153,7 @@ void test_for_pop_an_integer_element_more_than_2_in_top_of_the_stack_and_returns
 	result = pop(&stack_list);
 	assertEqual(*(int*)result->data,9);
 	assert(result->data == &z);
+	assertEqual(stack_list.count, 2);
 	assert(stack_list.top->data == &y);
 }
 
@@ -218,6 +219,41 @@ void test_for_pop_float_element_more_than_2_in_top_of_the_stack_and_returns_refr
 
 	result = pop(&stack_list);
 	assertEqual(*(float*)result->data,9);
+	assert(result->data == &z);
+	assert(stack_list.top->data == &y);
+}
+
+void test_for_pop_String_element_in_top_of_the_stack_and_gives_count_is_0(){
+	char* data = "vikas";
+	stack_list = createStack();
+	push(&stack_list,&data);
+
+	pop(&stack_list);
+	assertEqual(stack_list.count ,0);
+}
+
+void test_for_pop_String_element_in_top_of_the_stack_and_returns_refrence_of_the_pop_element(){
+	char* data = "vikas";
+	stack_list = createStack();
+	push(&stack_list,&data);
+
+	result = pop(&stack_list);
+	assertEqual(*(char*)result->data,(char)"vikas");
+	assert(stack_list.top==NULL);
+}
+
+void test_for_pop_string_element_more_than_2_in_top_of_the_stack_and_returns_refrence_of_the_pop_element(){
+	char* x = "vikas";
+	char* y="kumar";
+	char* z="pal";
+	stack_list = createStack();
+	
+	push(&stack_list,&x);
+	push(&stack_list,&y);
+	push(&stack_list,&z);
+
+	result = pop(&stack_list);
+	assertEqual(*(char*)result->data,(char)"pal");
 	assert(result->data == &z);
 	assert(stack_list.top->data == &y);
 }
