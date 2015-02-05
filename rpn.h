@@ -5,6 +5,10 @@ struct result {
   int status;
 };
 
-int evaluate(char *expression);
 int isOperand(int );
+
 int isOpeartor(int);
+
+Result evaluate(char * expression);
+
+char * infixToPostfix(char * expression);
