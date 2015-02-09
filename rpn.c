@@ -5,23 +5,25 @@
 #include <string.h>
 
 
-Stack stack_list;
-Node* result1;
-Node* result2;
+ // stack_list;
 
 
-int isOperand(int symbol){
-	return (symbol >=48 && symbol<=57) ? 1 : 0;
+int isOperand(int symbol) {
+	return (symbol >=48 && symbol<=57);
   
 };
 
-int isOpeartor(int symbol){
-    return (symbol >=40 && symbol<=47) ? 1 : 0;
+int isOperator(int symbol) {
+    int i;
+   char *operators = "+-*/^";
+    for(i=0;i<strlen(operators);i++){
+        if(symbol == operators[i])
+            return 1;
+    }
+    return 0;
 }
 
-
-
-int  operation(char symbol,void* result2,void* result1){
+int  doOperation(char symbol,void* result2,void* result1){
     int result;
     if(symbol == '+')
         result =  ((*(int*)result2)+(*(int*)result1));
@@ -35,7 +37,7 @@ int  operation(char symbol,void* result2,void* result1){
     return result;
 }
 
-void add_in_stack(Stack *stack_list ,char* expression,int i){
+void push_in_stack(Stack *stack_list ,char* expression,int i){
     int * express;
     express = malloc(sizeof(int));
     *express=atoi(&expression[i]);
@@ -44,95 +46,143 @@ void add_in_stack(Stack *stack_list ,char* expression,int i){
              push(stack_list,express);
     }else
         push(stack_list,express);
+};
+
+int count_operand_and_operator(char * expression){
+    int i, operand_count=0, operator_count=0;
+    for(i=0; i<strlen(expression); i++){
+
+        isOperand(expression[i]) && !isOperand(expression[i+1]) && operand_count++;
+        isOperator(expression[i]) && operator_count++;
+    }
+    return (operand_count == operator_count+1);
+}
+
+void pop_from_stack(Stack *stack_list ,char* expression,int i){
+    Node* second;
+    Node* first;
+    int * result;
+
+    second = pop(stack_list);
+    first = pop(stack_list);
+    result = malloc(sizeof(int));
+    *result = doOperation(expression[i],second->data,first->data);
+    push(stack_list,result);
+
+};
+int white_space(char symbol)
+{
+    return ((symbol == ' ') ||  (symbol == '\t'));
 }
 
 Result evaluate(char * expression){
     Result result ={0,0};
-    int i, operand_count=0, operator_count=0;
-    int *temp_result;
-    stack_list = createStack();
-    for(i=0; i<strlen(expression); i++){
-
-        isOperand(expression[i]) && !isOperand(expression[i+1]) && operand_count++;
-        isOpeartor(expression[i]) && operator_count++;
-    }
-    if(operand_count != operator_count+1) return (Result){1,0};
-
-    for(i=0;i<strlen(expression);i++)
-    {
-        if((int)expression[i] != 32 )
-            {
-
-            if(isOperand(expression[i])) {
-                add_in_stack(&stack_list,expression,i);
-            }
-            else if(isOpeartor(expression[i])) {
-                result2 = pop(&stack_list);
-                result1 = pop(&stack_list);
-                temp_result = malloc(sizeof(int));
-                *temp_result = operation(expression[i],result2->data,result1->data);
-                push(&stack_list,temp_result);
-            }
+    int i;
+    Stack stack_list = createStack();
+    if(!count_operand_and_operator(expression)) return (Result){1,0};
+    for(i=0;i<strlen(expression);i++) {
+        if(!white_space(expression[i]) ) {
+            if(isOperand(expression[i]))
+                push_in_stack(&stack_list,expression,i);
+            else if(isOperator(expression[i])) 
+                pop_from_stack(&stack_list,expression,i);
         }
     }
-    return (Result){0,*temp_result};
+    return (Result){0,*(int*)stack_list.top->data};
 };
 
-
-
-int hasHigherPrecedence(char symbol){
-
-    switch(symbol)
-    {
-    case '+':
-    case '-':
-        return 1;
-    case '*':
-    case '/':
-    case '%':
-        return 2;
-    case '^':
-        return 3;
-    default :
-        return 0;
+int higherPrecedence(char symbol){
+    switch(symbol){
+        case '(':
+        case ')':
+            return 0; 
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+        case '%':
+            return 2;
+        case '^':
+            return 3;
+        default :
+            return 0;
     }
 }
 
-int white_space(char symbol)
-{
-    if( symbol == ' ')
-        return 1;
-    else
-        return 0;
+
+int isEmpty(Stack *stack){
+    return (stack->top == NULL);
+
 }
+
+int is_higher_precedence(Stack *stack,char symbol){
+    return (higherPrecedence(*(char*)stack->top->data) 
+                >= higherPrecedence(symbol));
+}
+
+int isOpenParenthesis(char symbol){
+    return (symbol == '(');
+}
+
+int isCloseParenthesis(char symbol){
+    return (symbol == ')');
+}
+
+char get_stack_top_data(Stack *stack){
+    return *(char*)stack->top->data;
+}
+
+void operand_add_in_string(char *result,int * j,char symbol){
+    result[*j] = symbol;
+}
+
+void operator_add_in_string(char *result,int * j,Stack *stack){
+    result[*j] = get_stack_top_data(stack);
+        pop(stack);
+}
+
+// void operator_push_in_stack(char *result,int * j,Stack *stack,char * expression){
+
+// }
 
 char * infixToPostfix(char * expression){
     int i,j=0;
-    char* result = malloc(sizeof(char)*strlen(expression));
-    stack_list = createStack();
+    char symbol;
+    char* result = malloc(sizeof(char));
+    Stack stack_list = createStack();
     for(i=0;i<strlen(expression);i++)
     {
-        if(expression[i] != 32 ) {
-            if(isOperand(expression[i] )){
-                result[j] = expression[i];
-                j++;
+        symbol = expression[i];
+        if(isOperand(symbol))   {
+            operand_add_in_string(result,&j, symbol); j++;
+        }
+        else if(isOperator(symbol)) {
+            while((!isEmpty(&stack_list)) && is_higher_precedence(&stack_list,symbol)) {
+                operator_add_in_string(result,&j,&stack_list); j++;
             }
-            else if(isOpeartor(expression[i])) {
-                while((stack_list.top != NULL) && (hasHigherPrecedence(*(char*)stack_list.top->data) >= hasHigherPrecedence(expression[i]))){
-                        result[j] =  *(char*)stack_list.top->data;
-                        j++;
-                        pop(&stack_list);
-                }
-                 push(&stack_list,&expression[i]);
+                push(&stack_list,&expression[i]);
+        }
+        else if (isOpenParenthesis(symbol))
+            push(&stack_list,&expression[i]);
+        else if(isCloseParenthesis(symbol)) {
+            while((!isEmpty(&stack_list)) && get_stack_top_data(&stack_list) != '(') {
+                operator_add_in_string(result,&j,&stack_list); j++;
             }
+                pop(&stack_list);
         }
     }
-    while(stack_list.top != NULL) {
-       result[j] =  *(char*)stack_list.top->data; 
-        pop(&stack_list);
-        j++;
+       while(!isEmpty(&stack_list)) {
+        operator_add_in_string(result,&j,&stack_list); j++;
     }
-    result[j] = '\0';
-    return result;
+     result[j] = '\0';
+         return result;
 };
+
+
+
+
+
+
+
 

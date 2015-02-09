@@ -3,6 +3,7 @@
 #include "stdlib.h"
 #include "expr_assert.h"
 #include "rpn.h"
+#include "string.h"
 
 	Result result;
 
@@ -17,24 +18,84 @@ void test_for_operand_function_should_return_the_falseif_charecter_is_not_match(
 
 void test_for_isOpeartor_function_should_return_the_true_if_operator_is_found_(){
 	char ch ='+';
-	assertEqual(isOpeartor(ch),1);
+	assertEqual(isOperator(ch),1);
 }
 
 void test_for_isOpeartor_function_should_return_the_false_if_operator_is_found_(){
 	char ch ='0';
-	assertEqual(isOpeartor(ch),0);
+	assertEqual(isOperator(ch),0);
 }
 
 void test_for_isOpeartor_function_should_return_the_true_for_negative_symbol_is_found_(){
 	char ch ='-';
-	assertEqual(isOpeartor(ch),1);
+	assertEqual(isOperator(ch),1);
 }
 
+ void test_for_count_operand_and_operator_function_should_return_the_true_if_operand_is_greater_than_operator(){
+	char* ch ="4 + 8 * 6 - 5 / 3 - 2 * 2 + 2";
+	assertEqual(count_operand_and_operator(ch),1);
+}
+
+void test_for_count_operand_and_operator_function_should_return_the_false_if_operand_is_equall_to_operator(){
+	char* ch ="4 + 8 * 6 - 5 / 3 - 2 * 2 + 2 +";
+	assertEqual(count_operand_and_operator(ch),0);
+}
+void test_for_doOperation_add_the_two_value(){
+	int a=3,b=4,result;
+	result = doOperation('+',&a,&b);
+	assertEqual(result, 7);
+}
+
+void test_for_doOperation_subtract_the_two_value(){
+	int a=3,b=4,result;
+	result = doOperation('-',&b,&a);
+	assertEqual(result, -1);
+}
+
+void test_for_doOperation_multiply_the_two_value(){
+	int a=3,b=4,result;
+	result = doOperation('*',&b,&a);
+	assertEqual(result, 12);
+}
+
+void test_for_doOperation_divide_the_two_value(){
+	int a=12,b=4,result;
+	result = doOperation('/',&b,&a);
+	assertEqual(result, 3);
+}
+ void test_for_higherPrecedence_check_the_hightest_value_of_symbol(){
+ 	char symbol = '+';
+ 	char symbol1 = '-';
+
+ 	int result;
+ 	result = higherPrecedence(symbol);
+ 	assertEqual(result, 1);
+ 	result = higherPrecedence(symbol1);
+ 	assertEqual(result, 1);
+
+ }
+
+void test_for_higherPrecedence_check_the_hightest_value_of_symbol_multiply_and_divide_(){
+ 	char symbol = '*';
+ 	char symbol1 = '/';
+ 	char symbol2 = '^';
+
+ 	int result;
+ 	result = higherPrecedence(symbol);
+ 	assertEqual(result, 2);
+ 	result = higherPrecedence(symbol1);
+ 	assertEqual(result, 2);
+ 	result = higherPrecedence(symbol2);
+ 	assertEqual(result, 3);
+
+ }
 void test_for_postfix_2_3_add_should_gives_5_(){
 	char * string = "2 3 +";
 	result=(evaluate(string));
 	assertEqual(result.status,5);
 }
+
+
 
 void test_for_postfix_2_3_add_minus_should_gives_1(){
 	char * string = "2 3 + -";
@@ -192,14 +253,32 @@ void test_for_postfix_for_12_15_18_plus_multiply_divide(){
 
 
 void test_for_infixToPostfix_for_2_plus_3_should_gives_abc_multiply_plus(){
-	char * prefix ="2 * 4 - 8 + 6 * 2";
+	char * prefix ="2*4-8+6*2";
+	char * postfix ="24*8-62*+";
 	char * result;
 	result = infixToPostfix(prefix);
-	assertEqual(result[0], '2');
+	
 };
 
 void test_for_infixToPostfix_for_3_plus_4_multiply_5_should_gives_abc_multiply_plus(){
 	char * prefix ="3 + 4 * 2 / 1 - 5 ^ 2 ^ 3";
 	char* result;
 	result = infixToPostfix(prefix);
+	assertEqual(result[0],'3');
+	assertEqual(result[1],'4');
+	assertEqual(result[2],'2');
+	assertEqual(result[3],'*');
 }
+
+void test_for_infixToPostfix_for_3_plus_4_multiply_5_divide_6_multiply_plus(){
+	char * prefix ="( 4 + 8 + 8) * 6";
+	char * result;
+	result = infixToPostfix(prefix);
+	printf("%s\n",result );
+};
+ 
+ void test_for_infixToPostfix_for_brackets(){
+ 	char * prefix = "3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3";
+ 	char * result;
+	result = infixToPostfix(prefix);
+ }
