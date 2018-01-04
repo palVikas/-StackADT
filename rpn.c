@@ -70,23 +70,22 @@ void pop_from_stack(Stack *stack_list ,char* expression,int i){
     push(stack_list,result);
 
 };
-int white_space(char symbol)
-{
-    return ((symbol == ' ') ||  (symbol == '\t'));
-}
 
-Result evaluate(char * expression){
+Result evaluate(char * expression)
+{
     Result result ={0,0};
     int i;
     Stack stack_list = createStack();
+	
+	RemoveSpacesStr(expression);
+	
     if(!count_operand_and_operator(expression)) return (Result){1,0};
     for(i=0;i<strlen(expression);i++) {
-        if(!white_space(expression[i]) ) {
             if(isOperand(expression[i]))
                 push_in_stack(&stack_list,expression,i);
             else if(isOperator(expression[i])) 
                 pop_from_stack(&stack_list,expression,i);
-        }
+        
     }
     return (Result){0,*(int*)stack_list.top->data};
 };
@@ -121,14 +120,6 @@ int is_higher_precedence(Stack *stack,char symbol){
                 >= higherPrecedence(symbol));
 }
 
-int isOpenParenthesis(char symbol){
-    return (symbol == '(');
-}
-
-int isCloseParenthesis(char symbol){
-    return (symbol == ')');
-}
-
 char get_stack_top_data(Stack *stack){
     return *(char*)stack->top->data;
 }
@@ -151,6 +142,7 @@ char * infixToPostfix(char * expression){
     char symbol;
     char* result = malloc(sizeof(char));
     Stack stack_list = createStack();
+	
     for(i=0;i<strlen(expression);i++)
     {
         symbol = expression[i];
@@ -163,9 +155,9 @@ char * infixToPostfix(char * expression){
             }
                 push(&stack_list,&expression[i]);
         }
-        else if (isOpenParenthesis(symbol))
+        else if (symbol == '(')
             push(&stack_list,&expression[i]);
-        else if(isCloseParenthesis(symbol)) {
+        else if(symbol == ')') {
             while((!isEmpty(&stack_list)) && get_stack_top_data(&stack_list) != '(') {
                 operator_add_in_string(result,&j,&stack_list); j++;
             }
@@ -176,13 +168,18 @@ char * infixToPostfix(char * expression){
         operator_add_in_string(result,&j,&stack_list); j++;
     }
      result[j] = '\0';
-         return result;
+     return result;
 };
 
-
-
-
-
-
-
+void RemoveSpacesStr(char str[])
+{
+	short i,
+	      j;
+		 
+	for(i = j = 0;
+		str[i];
+		(((str[i] != ' ') && (str[i] != '\t')))? (str[j] = str[i], j++): 0, i++);
+	
+	str[j] = '\0';
+};
 
